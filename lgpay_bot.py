@@ -148,38 +148,48 @@ async def handle_pay(message: Message, state: FSMContext):
     
     parts = message.text.strip().replace("/pay", "").strip().split()
     if not parts:
-        await message.answer("❌ *Usage:* `/pay 500`", parse_mode="MarkdownV2")
+        await message.answer("❌ <b>Usage:</b> <code>/pay 500</code>", parse_mode="HTML")
         return
         
     try:
+        # Amount extract karna
         amount = float(parts[0].replace(",", ""))
         if amount < 1: raise ValueError
     except:
-        await message.answer("❌ *Invalid amount\!* Please enter a number\.", parse_mode="MarkdownV2")
+        await message.answer("❌ <b>Invalid amount!</b> Please enter a valid number.", parse_mode="HTML")
         return
 
-    # Loading message
-    msg = await message.answer("⏳ *Generating secure payment link\.\.\.*", parse_mode="MarkdownV2")
+    # User ko batane ke liye ki kaam ho raha hai
+    msg = await message.answer("⏳ <b>Generating secure payment link...</b>", parse_mode="HTML")
     
-    res = await create_payin_order(amount, message.from_user.id)
-    
-    if res.get("status") == 1:
-        url = res['data']['pay_url']
-        divider = "━" * 24
+    try:
+        # API call
+        res = await create_payin_order(amount, message.from_user.id)
         
-        # Premium Aesthetic Message
-        success_text = (
-            f"✅ *Payment Link Ready*\n"
-            f"`{divider}`\n"
-            f"💰 *Amount:* ₹{amount:,.2f}\n"
-            f"🔗 *Link:* [Click here to Pay]({url})\n"
-            f"`{divider}`\n"
-            f"⚡ _Powered by LG Payment Gateway_"
-        )
-        await msg.edit_text(success_text, parse_mode="MarkdownV2", disable_web_page_preview=True)
-    else:
-        error_msg = res.get("msg", "Unknown error")
-        await msg.edit_text(f"❌ *Failed:* {error_msg}", parse_mode="MarkdownV2")
+        if res.get("status") == 1:
+            data_block = res.get("data") or {}
+            pay_url = data_block.get("pay_url") or data_block.get("url")
+            divider = "━" * 22
+            
+            # Premium Aesthetic Look using HTML (No more stuck errors!)
+            success_text = (
+                f"✅ <b>Payment Link Ready</b>\n"
+                f"<code>{divider}</code>\n"
+                f"💰 <b>Amount:</b> ₹{amount:,.2f}\n"
+                f"🔗 <b>Link:</b> <a href='{pay_url}'>Click here to Pay</a>\n"
+                f"<code>{divider}</code>\n"
+                f"⚡ <i>Powered by LG Payment Gateway</i>"
+            )
+            await msg.edit_text(success_text, parse_mode="HTML", disable_web_page_preview=True)
+            
+        else:
+            # API se error aaye toh
+            error_msg = res.get("msg", "Unknown error from gateway")
+            await msg.edit_text(f"❌ <b>Gateway Error:</b> {error_msg}", parse_mode="HTML")
+
+    except Exception as e:
+        logger.error(f"Pay error: {e}")
+        await msg.edit_text("❌ <b>System Error!</b>\nSomething went wrong while connecting to LG Pay.", parse_mode="HTML")
 
 # (Note: Payout handlers collect_name, bank, etc. exactly as in dev code)
 async def handle_payout_start(message, state):
