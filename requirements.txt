@@ -1,2 +1,7 @@
 aiogram==3.7.0
 aiohttp>=3.9.0
+fastapi
+uvicorn
+requests
+python-dotenv
+aiosqlite
