@@ -433,8 +433,13 @@ async def handle_unknown(message: Message, state: FSMContext) -> None:
 
 
 # ─────────────────────────────────────────────────
-# Bot startup
+# Web Server & Bot startup
 # ─────────────────────────────────────────────────
+from aiohttp import web
+
+async def health_check(request):
+    """Render ko batane ke liye ki server zinda hai"""
+    return web.Response(text="LG Pay Bot is running 24/7 on Render!")
 
 async def main() -> None:
     bot = Bot(token=BOT_TOKEN)
@@ -444,21 +449,38 @@ async def main() -> None:
     # ── Command handlers (top priority)
     dp.message.register(handle_start, CommandStart())
     dp.message.register(handle_help, Command("help"))
-    dp.message.register(handle_cancel, Command("cancel"))    # works from any state
+    dp.message.register(handle_cancel, Command("cancel")) 
     dp.message.register(handle_payout_start, Command("payout"))
 
-    # ── FSM step handlers (ordered: name → bank → account → amount)
+    # ── FSM step handlers
     dp.message.register(handle_collect_name, PayoutStates.waiting_for_name, F.text)
     dp.message.register(handle_collect_bank, PayoutStates.waiting_for_bank, F.text)
     dp.message.register(handle_collect_account, PayoutStates.waiting_for_account, F.text)
     dp.message.register(handle_collect_amount, PayoutStates.waiting_for_amount, F.text)
 
-    # ── Catch-all (must be registered last)
+    # ── Catch-all
     dp.message.register(handle_unknown)
 
-    logger.info("LG Pay Bot starting (long-polling mode)")
-    await dp.start_polling(bot)
+    logger.info("Starting LG Pay Bot and Web Server...")
+    
+    # 1. Telegram Bot ko background mein start karein
+    asyncio.create_task(dp.start_polling(bot))
 
+    # 2. Render ke liye ek chhota sa Web Server start karein
+    app = web.Application()
+    app.router.add_get('/', health_check)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    
+    # Render khud ek port number deta hai, hum use yahan dhoondh rahe hain
+    port = int(os.environ.get("PORT", 10000))
+    site = web.TCPSite(runner, '0.0.0.0', port)
+    
+    logger.info(f"Web server is live on port {port}")
+    await site.start()
+
+    # Program ko band hone se rokne ke liye
+    await asyncio.Event().wait()
 
 if __name__ == "__main__":
     asyncio.run(main())
