@@ -443,7 +443,7 @@ async def health_check(request):
 
 async def main() -> None:
     bot = Bot(token=BOT_TOKEN)
- async def main() -> None:
+  
     # ── Command handlers (top priority)
     dp.message.register(handle_start, CommandStart())
     dp.message.register(handle_help, Command("help"))
