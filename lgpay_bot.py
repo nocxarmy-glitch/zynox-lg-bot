@@ -145,24 +145,41 @@ async def handle_start(message: Message) -> None:
 async def handle_pay(message: Message, state: FSMContext):
     if not is_whitelisted(message.from_user.id): return
     await state.clear()
+    
     parts = message.text.strip().replace("/pay", "").strip().split()
     if not parts:
-        await message.answer("❌ Usage: <code>/pay 500</code>", parse_mode="HTML")
+        await message.answer("❌ *Usage:* `/pay 500`", parse_mode="MarkdownV2")
         return
+        
     try:
         amount = float(parts[0].replace(",", ""))
         if amount < 1: raise ValueError
     except:
-        await message.answer("❌ Invalid amount.")
+        await message.answer("❌ *Invalid amount\!* Please enter a number\.", parse_mode="MarkdownV2")
         return
 
-    msg = await message.answer(f"⏳ Creating payment link for ₹{amount:,.2f}...")
+    # Loading message
+    msg = await message.answer("⏳ *Generating secure payment link\.\.\.*", parse_mode="MarkdownV2")
+    
     res = await create_payin_order(amount, message.from_user.id)
+    
     if res.get("status") == 1:
         url = res['data']['pay_url']
-        await msg.edit_text(f"✅ <b>Link:</b> <a href='{url}'>Click here to Pay</a>", parse_mode="HTML")
+        divider = "━" * 24
+        
+        # Premium Aesthetic Message
+        success_text = (
+            f"✅ *Payment Link Ready*\n"
+            f"`{divider}`\n"
+            f"💰 *Amount:* ₹{amount:,.2f}\n"
+            f"🔗 *Link:* [Click here to Pay]({url})\n"
+            f"`{divider}`\n"
+            f"⚡ _Powered by LG Payment Gateway_"
+        )
+        await msg.edit_text(success_text, parse_mode="MarkdownV2", disable_web_page_preview=True)
     else:
-        await msg.edit_text(f"❌ Error: {res.get('msg')}")
+        error_msg = res.get("msg", "Unknown error")
+        await msg.edit_text(f"❌ *Failed:* {error_msg}", parse_mode="MarkdownV2")
 
 # (Note: Payout handlers collect_name, bank, etc. exactly as in dev code)
 async def handle_payout_start(message, state):
