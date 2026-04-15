@@ -119,7 +119,7 @@ async def handle_start(message: Message) -> None:
     divider = "━" * 26
     
     MAKER_USERNAME = "Misakaishere"
-    PARTNER_USERNAME = "Rohan"
+    PARTNER_USERNAME = "Derickcarder69"
     MERCHANT_ID = "YD5038"
 
     text = (
