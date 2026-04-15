@@ -1,4 +1,4 @@
-# Welcome to Your Dazl Project! 🎉
+# Welcome to my Project! 🎉
 
 Your canvas for building beautiful, fast, and user-friendly web applications. This project is designed to help you move from idea to launch quickly, without getting bogged down in technical complexity.
 
