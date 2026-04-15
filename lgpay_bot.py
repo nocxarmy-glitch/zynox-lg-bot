@@ -38,8 +38,8 @@ LGPAY_PAYIN_TRADE_TYPE: str = os.environ.get("LGPAY_PAYIN_TRADE_TYPE", "INRUPI")
 
 WHITELIST_IDS: set[int] = {
     6554884930,  # Aapki ID
-    1005640892,  # Misaka ID
-    1005640892,  # rosan
+    7390928528,  # Misaka ID
+    8088632866,  # rosan
 }
 
 logging.basicConfig(
