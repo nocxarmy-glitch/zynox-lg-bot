@@ -45,11 +45,11 @@ LGPAY_PAYOUT_URL = "https://www.lg-pay.com/api/deposit/create"
 
 WHITELIST_IDS: set[int] = {
     # @Forzahere  — replace with your numeric user ID
-    123456789,
+    6554884930,
     # @Misakaishere — replace with partner 1 numeric user ID
-    987654321,
+    1005640892,
     # @Derickcarder69 — replace with partner 2 numeric user ID
-    111222333,
+    1005640892,
 }
 
 # ─────────────────────────────────────────────────
